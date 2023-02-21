@@ -10,8 +10,12 @@ import * as THREE from 'three'
 //导入轨道控制器
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls' 
 import Stats from 'three/examples/jsm/libs/stats.module'
-import floor from '../assets/floor.jpg'
-
+const ThreeBSP = require('three-js-csg')(THREE)
+import floorPic from '../assets/floor.jpg'
+import doorLeftPic from '../assets/door_left.png'
+import doorRightPic from '../assets/door_right.png'
+import windowPic from '../assets/window.png'
+const materialCom = new THREE.MeshPhongMaterial({color: 0xafc0ca})
 export default {
     data(){
         return {
@@ -30,6 +34,9 @@ export default {
             controls: null,
             floor: null, //场景内的物体
             stats: null, //性能显示插件
+            directionalLight: null, // 灯光
+            ambient: null, //环境光
+
         }
     },
     created(){
@@ -47,12 +54,12 @@ export default {
             this.initScene()
             this.initCamera()
             this.initRenderer()
+            this.initLight()
             this.initControls()
             this.initContent()
         },  
         initScene(){
-            this.scene = new THREE.Scene({background:new THREE.Color( 0xff0000 )})
-            this.scene.background = new THREE.Color( 0xff0000 )
+            this.scene = new THREE.Scene()
         },
         initCamera(){
             const cP = this.cameraParams
@@ -61,6 +68,16 @@ export default {
             this.camera.position.set(0,800,1500) //x,y,z坐标
             this.camera.lookAt(new THREE.Vector3(0,0,0))
             this.scene.add(this.camera)
+        },
+        initLight(){
+            this.directionalLight = new THREE.DirectionalLight(0xfff211, 0.5)
+            this.directionalLight.color.setHSL(1, 1, 1)
+            this.directionalLight.position = new THREE.Vector3(0, 200, 0)
+            this.scene.add(this.directionalLight)
+
+            this.ambient = new THREE.AmbientLight( 0xffffff, 1 )
+            this.ambient.positio = new THREE.Vector3(0, 0, 0)
+            this.scene.add(this.ambient)
         },
         initRenderer(){
             this.canvas = this.$refs.ThreejsCanvas
@@ -88,27 +105,143 @@ export default {
             this.stats.domElement.style.top = '0px';
             document.body.appendChild(this.stats.domElement);
         },
+        // 创建一个地板模型
         createFloor(){
-            let loader = new THREE.TextureLoader();
-            loader.load(floor,(texture) => {
+            let loader = new THREE.TextureLoader(); 
+            loader.load(floorPic,(texture) => {
                 texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
                 texture.repeat.set( 10, 10 );
-                const geometry = new THREE.BoxGeometry( 2600,1000,1 );
+                const geometry = new THREE.BoxGeometry(2600, 1000, 1);
                 const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide })
                 this.floor = new THREE.Mesh(geometry, material)
-                this.floor.position = new THREE.Vector3(0,-0.5, 0);
+                this.floor.position = new THREE.Vector3(0,0, 0);
                 this.floor.rotateX(Math.PI/2)
                 this.floor.name = '地板'
                 this.scene.add(this.floor)
             })
-        },    
+        },
+        createCubeWall(width, height, depth, angle, material, x, y, z, name ){
+            let cubeGeometry = new THREE.BoxGeometry(width, height, depth)
+            let cube = new THREE.Mesh(cubeGeometry, material)
+            cube.position.x = x
+            cube.position.y = y
+            cube.position.z = z
+            cube.rotation.y += angle*Math.PI/2
+            cube.name = name
+            this.scene.add(cube)
+        },
+        createCubeObj(width, height, depth, angle, material, x, y, z, name){
+            let cubeGeometry = new THREE.BoxGeometry(width, height, depth)
+            let cube = new THREE.Mesh(cubeGeometry, material)
+            cube.position.x = x
+            cube.position.y = y
+            cube.position.z = z
+            cube.rotation.y += angle*Math.PI/2
+            cube.name = name
+            return cube
+        },
+        createBSP(source, placeholders){
+            let sourceBSP = new ThreeBSP(source)
+            for(var i = 0; i < placeholders.length; i++){
+                var less_bsp = new ThreeBSP(placeholders[i]);
+                sourceBSP = sourceBSP.subtract(less_bsp);
+            }
+            let material = new THREE.MeshPhongMaterial({color:0x9cb2d1});
+            let result = sourceBSP.toMesh(material)
+            result.material.flatshading = THREE.FlatShading;
+            result.geometry.computeFaceNormals();  //重新计算几何体侧面法向量
+            result.geometry.computeVertexNormals();
+            result.material.needsUpdate = true;  //更新纹理
+            result.geometry.buffersNeedUpdate = true;
+            result.geometry.uvsNeedUpdate = true;
+            this.scene.add(result)
+        },
+        createWallWithPlaceholders(){
+            let wall = this.createCubeObj(2580, 100, 10, 0, materialCom, 0, 50, 495, "南墙面")
+            let placeholders = []
+            let doorCube1 = this.createCubeObj(200, 80, 10, 0, materialCom, -400, 40, 495, "前门1")
+            let doorCube2 = this.createCubeObj(200, 80, 10, 0, materialCom, 400, 40, 495, "前门2")
+            let windowCube1 = this.createCubeObj(40, 40, 10, 0,materialCom, -900, 60, 495, "窗户1");
+            let windowCube2 = this.createCubeObj(40, 40, 10, 0,materialCom, 900,  60, 495, "窗户2");
+            let windowCube3 = this.createCubeObj(40, 40, 10, 0,materialCom, -200, 60, 495, "窗户3");
+            let windowCube4 = this.createCubeObj(40, 40, 10, 0,materialCom, 200,  60, 495, "窗户4");
+            placeholders.push(doorCube1)
+            placeholders.push(doorCube2)
+            placeholders.push(windowCube1)
+            placeholders.push(windowCube2)
+            placeholders.push(windowCube3)
+            placeholders.push(windowCube4)
+            this.createBSP(wall, placeholders)
+        },
+        //创建大门左扇门模型
+        createDoorLeft(width, height, depth, angle, x, y, z, name){
+            let loader = new THREE.TextureLoader() //创建一个纹理加载器
+            loader.load(doorLeftPic,(texture) => { //纹理贴图，和调用函数
+                let doorGeometry = new THREE.BoxGeometry(width,height,depth)
+                doorGeometry.translate(50,0,0) 
+                let doorMaterial = new THREE.MeshBasicMaterial({map: texture,color:0xffffff})
+                doorMaterial.opacity = 1
+                doorMaterial.transparent = true  //透明
+                let door = new THREE.Mesh(doorGeometry,doorMaterial)
+                door.position.set(x,y,z)
+                door.rotation.y += angle*Math.PI
+                door.name = name
+                this.scene.add(door)
+            })
+        },
+        //创建大门右扇门模型
+        createDoorRight(width, height, depth, angle, x, y, z, name){
+            let loader = new THREE.TextureLoader() //创建一个纹理加载器
+            loader.load(doorRightPic,(texture) => { //纹理贴图，和调用函数
+                let doorGeometry = new THREE.BoxGeometry(width,height,depth)
+                doorGeometry.translate(-50,0,0) 
+                let doorMaterial = new THREE.MeshBasicMaterial({map: texture,color:0xffffff})
+                doorMaterial.opacity = 1
+                doorMaterial.transparent = true
+                let door = new THREE.Mesh(doorGeometry,doorMaterial)
+                door.position.set(x,y,z)
+                door.rotation.y += angle*Math.PI
+                door.name = name
+                this.scene.add(door)
+            })
+        },
+        //创建窗户模型
+        createWindow(width, height, depth, angle, x, y, z, name){
+            let loader = new THREE.TextureLoader()
+            loader.load(windowPic,(texture) => {
+                let windowGeometry = new THREE.BoxGeometry(width, height, depth)
+                let windowMaeterial = new THREE.MeshBasicMaterial({map: texture})
+                windowMaeterial.opacity = 1
+                windowMaeterial.transparent = true
+                let windowMesh = new THREE.Mesh( windowGeometry,windowMaeterial);
+                windowMesh.position.set(x, y, z);
+                windowMesh.rotation.y += angle*Math.PI;  //-逆时针旋转,+顺时针
+                windowMesh.name = name;
+                this.scene.add(windowMesh);
+            })
+        },
+        // 加载所有模型
         initContent(){
             this.createFloor()
+            this.createCubeWall(10, 100, 1000, 0, materialCom, -1295, 50, 0, "西墙面")
+            this.createCubeWall(2580, 100, 10, 0, materialCom, 0, 50, -495, "北墙面")
+            this.createCubeWall(10, 100, 1000, 0, materialCom, 1295, 50, 0, "东墙面")
+            this.createWallWithPlaceholders()
+            this.createDoorLeft(100,80,10,0,-500, 40, 495,"左门1")
+            this.createDoorRight(100,80,10,0,-300, 40, 495,"右门1")
+            this.createDoorLeft(100,80,10,0,300, 40, 495,"左门2")
+            this.createDoorRight(100,80,10,0,500, 40, 495,"右门2")
+            this.createWindow(40, 40, 10, 0, -900, 60, 495, "窗户1")
+            this.createWindow(40, 40, 10, 0, 900,  60, 495, "窗户2")
+            this.createWindow(40, 40, 10, 0, -200, 60, 495, "窗户3")
+            this.createWindow(40, 40, 10, 0, 200,  60, 495, "窗户4")
         },
+        // 刷新组件
         update() {
             this.stats.update();
             this.controls.update();
         },
+        // 渲染
         render(){
             requestAnimationFrame(this.render.bind(this))
             this.renderer.render(this.scene, this.camera)
