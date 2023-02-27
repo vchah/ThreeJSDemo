@@ -8,13 +8,23 @@
 //导入threejs
 import * as THREE from 'three'
 //导入轨道控制器
-import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls' 
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer' //效果合成器（EffectComposer）
+import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader'          // 抗锯齿 为了覆盖到原理来的场景上
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'   // 场景通道
+import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass' //物体边缘发光通道 物体边界线条高亮处理
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass'   // 自定义着色器通道（ShaderPass）
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls' 
 import Stats from 'three/examples/jsm/libs/stats.module'
+import '../utils/ThreeJs_Composer'
+import { Tween } from 'tween.js'
+// ThreeBSP库
 const ThreeBSP = require('three-js-csg')(THREE)
+// 场景贴图
 import floorPic from '../assets/floor.jpg'
 import doorLeftPic from '../assets/door_left.png'
 import doorRightPic from '../assets/door_right.png'
 import windowPic from '../assets/window.png'
+
 const materialCom = new THREE.MeshPhongMaterial({color: 0xafc0ca})
 export default {
     data(){
@@ -36,7 +46,8 @@ export default {
             stats: null, //性能显示插件
             directionalLight: null, // 灯光
             ambient: null, //环境光
-
+            composer: null, // 合成器
+            tween: null
         }
     },
     created(){
@@ -159,8 +170,8 @@ export default {
         createWallWithPlaceholders(){
             let wall = this.createCubeObj(2580, 100, 10, 0, materialCom, 0, 50, 495, "南墙面")
             let placeholders = []
-            let doorCube1 = this.createCubeObj(200, 80, 10, 0, materialCom, -400, 40, 495, "前门1")
-            let doorCube2 = this.createCubeObj(200, 80, 10, 0, materialCom, 400, 40, 495, "前门2")
+            let doorCube1 = this.createCubeObj(100, 80, 10, 0, materialCom, -400, 40, 495, "前门1")
+            let doorCube2 = this.createCubeObj(100, 80, 10, 0, materialCom, 400, 40, 495, "前门2")
             let windowCube1 = this.createCubeObj(40, 40, 10, 0,materialCom, -900, 60, 495, "窗户1");
             let windowCube2 = this.createCubeObj(40, 40, 10, 0,materialCom, 900,  60, 495, "窗户2");
             let windowCube3 = this.createCubeObj(40, 40, 10, 0,materialCom, -200, 60, 495, "窗户3");
@@ -178,7 +189,7 @@ export default {
             let loader = new THREE.TextureLoader() //创建一个纹理加载器
             loader.load(doorLeftPic,(texture) => { //纹理贴图，和调用函数
                 let doorGeometry = new THREE.BoxGeometry(width,height,depth)
-                doorGeometry.translate(50,0,0) 
+                doorGeometry.translate(25,0,0) 
                 let doorMaterial = new THREE.MeshBasicMaterial({map: texture,color:0xffffff})
                 doorMaterial.opacity = 1
                 doorMaterial.transparent = true  //透明
@@ -194,7 +205,7 @@ export default {
             let loader = new THREE.TextureLoader() //创建一个纹理加载器
             loader.load(doorRightPic,(texture) => { //纹理贴图，和调用函数
                 let doorGeometry = new THREE.BoxGeometry(width,height,depth)
-                doorGeometry.translate(-50,0,0) 
+                doorGeometry.translate(-25,0,0) 
                 let doorMaterial = new THREE.MeshBasicMaterial({map: texture,color:0xffffff})
                 doorMaterial.opacity = 1
                 doorMaterial.transparent = true
@@ -227,24 +238,28 @@ export default {
             this.createCubeWall(2580, 100, 10, 0, materialCom, 0, 50, -495, "北墙面")
             this.createCubeWall(10, 100, 1000, 0, materialCom, 1295, 50, 0, "东墙面")
             this.createWallWithPlaceholders()
-            this.createDoorLeft(100,80,10,0,-500, 40, 495,"左门1")
-            this.createDoorRight(100,80,10,0,-300, 40, 495,"右门1")
-            this.createDoorLeft(100,80,10,0,300, 40, 495,"左门2")
-            this.createDoorRight(100,80,10,0,500, 40, 495,"右门2")
+            this.createDoorLeft(50,80,10,0,-450, 40, 495,"左门1")
+            this.createDoorRight(50,80,10,0,-350, 40, 495,"右门1")
+            this.createDoorLeft(50,80,10,0,350, 40, 495,"左门2")
+            this.createDoorRight(50,80,10,0,450, 40, 495,"右门2")
             this.createWindow(40, 40, 10, 0, -900, 60, 495, "窗户1")
             this.createWindow(40, 40, 10, 0, 900,  60, 495, "窗户2")
             this.createWindow(40, 40, 10, 0, -200, 60, 495, "窗户3")
             this.createWindow(40, 40, 10, 0, 200,  60, 495, "窗户4")
+            this.
+            this.composer = new THREE.ThreeJs_Composer(this.renderer,this.scene,this.camera)
         },
         // 刷新组件
         update() {
             this.stats.update();
             this.controls.update();
+            
         },
         // 渲染
         render(){
             requestAnimationFrame(this.render.bind(this))
             this.renderer.render(this.scene, this.camera)
+            this.composer.render()
             this.update()
         },
     },
