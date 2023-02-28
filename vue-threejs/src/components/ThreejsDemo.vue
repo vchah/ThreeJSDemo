@@ -126,7 +126,7 @@ export default {
                 const geometry = new THREE.BoxGeometry(2600, 1000, 1);
                 const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide })
                 this.floor = new THREE.Mesh(geometry, material)
-                this.floor.position = new THREE.Vector3(0,0, 0);
+                this.floor.position = new THREE.Vector3(0,-0.5, 0);
                 this.floor.rotateX(Math.PI/2)
                 this.floor.name = '地板'
                 this.scene.add(this.floor)

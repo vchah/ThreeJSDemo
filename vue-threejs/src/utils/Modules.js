@@ -2,6 +2,7 @@
  * 存放仓库显示模型
  */
 import * as THREE from 'three'
+import { shelfConfig } from '@/components/Config'
 const planePNG = require('../assets/plane.png') 
 import FZYaotiFont from '../assets/FZYaoTi_Regular.json'
 
@@ -56,24 +57,33 @@ export function addArea(x,z,width,length,scene,name,textColor,fontSize,textPosit
         scene.add(mesh);
 }
 
-const shelfConfig = {
-    panelWidth: 80,
-    panelHeight: 60,
-    panelDepth: 10,
-    panelTexture: require('../assets/rack.png'),
-    legWidth:10,
-    legDepth:10,
-    legHeight:120,
-}
 export function createShelf(scene){
-    var planeGeometry = new THREE.BoxGeometry(shelfConfig.panelWidth,shelfConfig.panelDepth,shelfConfig.panelHeight)
-    var planeRackMat = new THREE.MeshBasicMaterial()
-    new THREE.TextureLoader().load(shelfConfig.panelTexture,(texture) => {
+    let planeGeometry = new THREE.BoxGeometry(shelfConfig.planeWidth,shelfConfig.planeDepth,shelfConfig.planeHeight)
+    let planeRackMat = new THREE.MeshBasicMaterial()
+    new THREE.TextureLoader().load(shelfConfig.planeTexture,(texture) => {
         planeRackMat.map = texture
         planeRackMat.transparent = true
         planeRackMat.opacity = 0.8
         planeRackMat.needsUpdate = true
     })
-    var obj = new THREE.Mesh(planeGeometry,planeRackMat)
-    scene.add(obj)
+    for(let i = 0; i < shelfConfig.layersNum; i++){
+        let plane = new THREE.Mesh(planeGeometry,planeRackMat)
+        plane.position.set(shelfConfig.positionX,(shelfConfig.legDepth-shelfConfig.legDepth*i/shelfConfig.layersNum)-shelfConfig.planeDepth/2 + shelfConfig.positionY,shelfConfig.positionZ)
+        scene.add(plane)
+    }
+    let legMaterial = new THREE.MeshBasicMaterial({color:0x1C86EE})
+    let leg = new THREE.BoxGeometry(shelfConfig.legWidth,shelfConfig.legDepth,shelfConfig.legHeight)
+    let leg1 = new THREE.Mesh(leg,legMaterial)
+    let leg2 = new THREE.Mesh(leg,legMaterial)
+    let leg3 = new THREE.Mesh(leg,legMaterial)
+    let leg4 = new THREE.Mesh(leg,legMaterial)
+    leg1.position.set(shelfConfig.positionX+(shelfConfig.planeWidth-shelfConfig.legWidth)/2, shelfConfig.legDepth/2 + shelfConfig.positionY, shelfConfig.positionZ+(shelfConfig.planeHeight-shelfConfig.legHeight)/2)
+    leg2.position.set(shelfConfig.positionX+(shelfConfig.planeWidth-shelfConfig.legWidth)/2, shelfConfig.legDepth/2 + shelfConfig.positionY, shelfConfig.positionZ-(shelfConfig.planeHeight-shelfConfig.legHeight)/2)
+    leg3.position.set(shelfConfig.positionX-(shelfConfig.planeWidth-shelfConfig.legWidth)/2, shelfConfig.legDepth/2 + shelfConfig.positionY, shelfConfig.positionZ-(shelfConfig.planeHeight-shelfConfig.legHeight)/2)
+    leg4.position.set(shelfConfig.positionX-(shelfConfig.planeWidth-shelfConfig.legWidth)/2, shelfConfig.legDepth/2 + shelfConfig.positionY, shelfConfig.positionZ+(shelfConfig.planeHeight-shelfConfig.legHeight)/2)
+    // scene.add(plane)
+    scene.add(leg1)
+    scene.add(leg2)
+    scene.add(leg3)
+    scene.add(leg4)
 }
