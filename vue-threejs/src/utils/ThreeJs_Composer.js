@@ -1,5 +1,4 @@
 /*
- * @author xiening
  * Running this will allow you to show white line around objects which you selected.
  */
 /*
@@ -18,7 +17,7 @@ import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader'          // �
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'   // 场景通道
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass' //物体边缘发光通道 物体边界线条高亮处理
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass'   
-import { Tween } from 'tween.js'
+import * as TWEEN from 'tween.js'
 THREE.ThreeJs_Composer = function ( _renderer, _scene, _camera, _options, _selectobject) {
     var raycaster = new THREE.Raycaster();
   	var mouse = new THREE.Vector2();
@@ -94,29 +93,29 @@ THREE.ThreeJs_Composer = function ( _renderer, _scene, _camera, _options, _selec
 
         if(intersects[0].object.name == "左门1"){
             if(door_state_left1){
-                new Tween(intersects[0].object.rotation).to({
+                new TWEEN.Tween(intersects[0].object.rotation).to({
                     y: -0.5*Math.PI
-                }, 5000).easing(Tween.Easing.Elastic.Out).onComplete(function(){
+                }, 5000).easing(TWEEN.Easing.Elastic.Out).onComplete(function(){
                 }).start();
                 door_state_left1 = false;
             }else{
-                new Tween(intersects[0].object.rotation).to({
+                new TWEEN.Tween(intersects[0].object.rotation).to({
                     y: 0
-                }, 5000).easing(Tween.Easing.Elastic.Out).onComplete(function(){
+                }, 5000).easing(TWEEN.Easing.Elastic.Out).onComplete(function(){
                 }).start();
                 door_state_left1 = true;
             }
         }else if(intersects[0].object.name == "右门1"){
             if(door_state_right1){
-                new Tween(intersects[0].object.rotation).to({
+                new TWEEN.Tween(intersects[0].object.rotation).to({
                     y: 0.5*Math.PI
-                }, 5000).easing(Tween.Easing.Elastic.Out).onComplete(function(){
+                }, 5000).easing(TWEEN.Easing.Elastic.Out).onComplete(function(){
                 }).start();
                 door_state_right1 = false;
             }else{
-                new Tween(intersects[0].object.rotation).to({
+                new TWEEN.Tween(intersects[0].object.rotation).to({
                     y: 0
-                }, 5000).easing(Tween.Easing.Elastic.Out).onComplete(function(){
+                }, 5000).easing(TWEEN.Easing.Elastic.Out).onComplete(function(){
                 }).start();
                 door_state_right1 = true;
             }

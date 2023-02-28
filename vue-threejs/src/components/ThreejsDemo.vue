@@ -16,7 +16,8 @@ import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass'   // �
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls' 
 import Stats from 'three/examples/jsm/libs/stats.module'
 import '../utils/ThreeJs_Composer'
-import { Tween } from 'tween.js'
+import {initMaterial,addArea, createShelf} from '../utils/Modules'
+import TWEEN, { Tween } from 'tween.js'
 // ThreeBSP库
 const ThreeBSP = require('three-js-csg')(THREE)
 // 场景贴图
@@ -238,22 +239,24 @@ export default {
             this.createCubeWall(2580, 100, 10, 0, materialCom, 0, 50, -495, "北墙面")
             this.createCubeWall(10, 100, 1000, 0, materialCom, 1295, 50, 0, "东墙面")
             this.createWallWithPlaceholders()
-            this.createDoorLeft(50,80,10,0,-450, 40, 495,"左门1")
-            this.createDoorRight(50,80,10,0,-350, 40, 495,"右门1")
+            this.createDoorLeft(50,80,1,0,-450, 40, 495,"左门1")
+            this.createDoorRight(50,80,1,0,-350, 40, 495,"右门1")
             this.createDoorLeft(50,80,10,0,350, 40, 495,"左门2")
             this.createDoorRight(50,80,10,0,450, 40, 495,"右门2")
             this.createWindow(40, 40, 10, 0, -900, 60, 495, "窗户1")
             this.createWindow(40, 40, 10, 0, 900,  60, 495, "窗户2")
             this.createWindow(40, 40, 10, 0, -200, 60, 495, "窗户3")
             this.createWindow(40, 40, 10, 0, 200,  60, 495, "窗户4")
-            this.
+            initMaterial()
+            addArea(0,0,500,500,this.scene,"ID1$库区1号","FF0000",20,"左对齐"); //添加库区
+            createShelf(this.scene)
             this.composer = new THREE.ThreeJs_Composer(this.renderer,this.scene,this.camera)
         },
         // 刷新组件
         update() {
             this.stats.update();
             this.controls.update();
-            
+            TWEEN.update()
         },
         // 渲染
         render(){
