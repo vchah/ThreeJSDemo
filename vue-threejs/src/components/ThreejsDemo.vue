@@ -8,16 +8,12 @@
 //导入threejs
 import * as THREE from 'three'
 //导入轨道控制器
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer' //效果合成器（EffectComposer）
-import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader'          // 抗锯齿 为了覆盖到原理来的场景上
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'   // 场景通道
-import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass' //物体边缘发光通道 物体边界线条高亮处理
-import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass'   // 自定义着色器通道（ShaderPass）
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls' 
 import Stats from 'three/examples/jsm/libs/stats.module'
 import '../utils/ThreeJs_Composer'
-import {initMaterial,addArea, createShelf} from '../utils/Modules'
-import TWEEN, { Tween } from 'tween.js'
+import {initMaterial,addArea, createShelf,addCargo} from '../utils/Modules'
+import {boxCargo, shelfConfig} from './Config'
+import TWEEN from 'tween.js'
 // ThreeBSP库
 const ThreeBSP = require('three-js-csg')(THREE)
 // 场景贴图
@@ -25,7 +21,7 @@ import floorPic from '../assets/floor.jpg'
 import doorLeftPic from '../assets/door_left.png'
 import doorRightPic from '../assets/door_right.png'
 import windowPic from '../assets/window.png'
-
+import { GUI } from 'three/examples/jsm/libs/dat.gui.module'
 const materialCom = new THREE.MeshPhongMaterial({color: 0xafc0ca})
 export default {
     data(){
@@ -45,10 +41,11 @@ export default {
             controls: null,
             floor: null, //场景内的物体
             stats: null, //性能显示插件
+            gui:null, //gui插件
             directionalLight: null, // 灯光
             ambient: null, //环境光
             composer: null, // 合成器
-            tween: null
+            cargo:null, //货物
         }
     },
     created(){
@@ -69,6 +66,7 @@ export default {
             this.initLight()
             this.initControls()
             this.initContent()
+            this.initGui()
         },  
         initScene(){
             this.scene = new THREE.Scene()
@@ -232,6 +230,15 @@ export default {
                 this.scene.add(windowMesh);
             })
         },
+        //添加gui
+        initGui(){
+            this.gui = new GUI()
+            let shelfFolder = this.gui.addFolder('Shelf')
+            shelfFolder.add(shelfConfig,'legDepth').min(1).max(200).step(1).name('货架高度')
+            shelfFolder.open()
+            let cargoFolder = this.gui.addFolder('BoxCargo')
+            cargoFolder.add(boxCargo, 'name')
+        },  
         // 加载所有模型
         initContent(){
             this.createFloor()
@@ -249,7 +256,9 @@ export default {
             this.createWindow(40, 40, 10, 0, 200,  60, 495, "窗户4")
             initMaterial()
             addArea(0,0,500,500,this.scene,"ID1$库区1号","FF0000",20,"左对齐"); //添加库区
-            createShelf(this.scene)
+            console.log(shelfConfig)
+            createShelf(shelfConfig,this.scene)
+            this.cargo = addCargo(this.scene,shelfConfig,boxCargo)
             this.composer = new THREE.ThreeJs_Composer(this.renderer,this.scene,this.camera)
         },
         // 刷新组件

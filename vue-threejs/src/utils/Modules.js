@@ -2,12 +2,12 @@
  * 存放仓库显示模型
  */
 import * as THREE from 'three'
-import { shelfConfig } from '@/components/Config'
 const planePNG = require('../assets/plane.png') 
 import FZYaotiFont from '../assets/FZYaoTi_Regular.json'
 
 //货区材质信息
 var planeMaterial
+var planeList = []
 
 export function initMaterial() {
     planeMaterial = new THREE.MeshLambertMaterial()
@@ -57,7 +57,7 @@ export function addArea(x,z,width,length,scene,name,textColor,fontSize,textPosit
         scene.add(mesh);
 }
 
-export function createShelf(scene){
+export function createShelf(shelfConfig,scene){
     let planeGeometry = new THREE.BoxGeometry(shelfConfig.planeWidth,shelfConfig.planeDepth,shelfConfig.planeHeight)
     let planeRackMat = new THREE.MeshBasicMaterial()
     new THREE.TextureLoader().load(shelfConfig.planeTexture,(texture) => {
@@ -69,6 +69,9 @@ export function createShelf(scene){
     for(let i = 0; i < shelfConfig.layersNum; i++){
         let plane = new THREE.Mesh(planeGeometry,planeRackMat)
         plane.position.set(shelfConfig.positionX,(shelfConfig.legDepth-shelfConfig.legDepth*i/shelfConfig.layersNum)-shelfConfig.planeDepth/2 + shelfConfig.positionY,shelfConfig.positionZ)
+        plane.name = '库区1号' + '$' + '货架A1' + '-' + (shelfConfig.layersNum-i) + '层' //货架每层设置名称
+        let planeObj = {name:plane.name, obj:plane}
+        planeList.push(planeObj)
         scene.add(plane)
     }
     let legMaterial = new THREE.MeshBasicMaterial({color:0x1C86EE})
@@ -86,4 +89,24 @@ export function createShelf(scene){
     scene.add(leg2)
     scene.add(leg3)
     scene.add(leg4)
+}
+function createCargo(x,y,z,boxCargo) {
+    let geometry = new THREE.BoxGeometry( boxCargo.width,boxCargo.height,boxCargo.depth);
+    let cargoMaterial = new THREE.MeshBasicMaterial()
+    new THREE.TextureLoader().load(boxCargo.texture,(texture) => {
+        cargoMaterial.map = texture
+        cargoMaterial.needsUpdate = true;
+    })
+    let obj = new THREE.Mesh( geometry, cargoMaterial );
+    obj.position.set(x,y,z);
+    obj.name = boxCargo.name;
+    return obj
+}
+
+export function addCargo(shelfConfig,boxCargo){
+    let x = shelfConfig.positionX;
+    let y = shelfConfig.positionY + boxCargo.depth/2 + shelfConfig.legDepth*boxCargo.layer/shelfConfig.layersNum;
+    let z = shelfConfig.positionZ;
+    let box = createCargo(x,y,z,boxCargo)
+    return box
 }

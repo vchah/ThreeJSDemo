@@ -1,22 +1,9 @@
-/*
- * Running this will allow you to show white line around objects which you selected.
- */
-/*
-  * 需要在jsp中导入的包
-  <script src="./ThreeJs/three.js"></script>
-  <script src="./ThreeJs/EffectComposer.js"></script>
-  <script src="./ThreeJs/RenderPass.js"></script>
-  <script src="./ThreeJs/OutlinePass.js"></script>
-  <script src="./ThreeJs/FXAAShader.js"></script>
-  <script src="./ThreeJs/ShaderPass.js"></script>
-  <script src="./ThreeJs/CopyShader.js"></script>
-  */
 import * as THREE from 'three'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer' //效果合成器（EffectComposer）
 import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader'          // 抗锯齿 为了覆盖到原理来的场景上
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'   // 场景通道
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass' //物体边缘发光通道 物体边界线条高亮处理
-import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass'   
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass'   // 自定义着色器通道（ShaderPass）
 import * as TWEEN from 'tween.js'
 THREE.ThreeJs_Composer = function ( _renderer, _scene, _camera, _options, _selectobject) {
     var raycaster = new THREE.Raycaster();
