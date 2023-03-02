@@ -43,7 +43,7 @@ THREE.ThreeJs_Composer = function ( _renderer, _scene, _camera, _options, _selec
         mouse.y = - ( y / window.innerHeight ) * 2 + 1;
         raycaster.setFromCamera( mouse, _camera );
         var intersects = raycaster.intersectObjects( [ _scene ], true );
-
+        console.log('射线经过的物体', intersects)
         if(intersects.length == 0){
             // $("#label").attr("style","display:none;");//隐藏说明性标签
             document.getElementById('label').style.display = 'none'

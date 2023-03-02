@@ -71,6 +71,7 @@ export function createShelf(shelfConfig,scene){
         plane.position.set(shelfConfig.positionX,(shelfConfig.legDepth-shelfConfig.legDepth*i/shelfConfig.layersNum)-shelfConfig.planeDepth/2 + shelfConfig.positionY,shelfConfig.positionZ)
         plane.name = '库区1号' + '$' + '货架A1' + '-' + (shelfConfig.layersNum-i) + '层' //货架每层设置名称
         let planeObj = {name:plane.name, obj:plane}
+        plane.needsUpdate = true
         planeList.push(planeObj)
         scene.add(plane)
     }
@@ -80,6 +81,10 @@ export function createShelf(shelfConfig,scene){
     let leg2 = new THREE.Mesh(leg,legMaterial)
     let leg3 = new THREE.Mesh(leg,legMaterial)
     let leg4 = new THREE.Mesh(leg,legMaterial)
+    leg1.needsUpdate = true
+    leg2.needsUpdate = true
+    leg3.needsUpdate = true
+    leg4.needsUpdate = true
     leg1.position.set(shelfConfig.positionX+(shelfConfig.planeWidth-shelfConfig.legWidth)/2, shelfConfig.legDepth/2 + shelfConfig.positionY, shelfConfig.positionZ+(shelfConfig.planeHeight-shelfConfig.legHeight)/2)
     leg2.position.set(shelfConfig.positionX+(shelfConfig.planeWidth-shelfConfig.legWidth)/2, shelfConfig.legDepth/2 + shelfConfig.positionY, shelfConfig.positionZ-(shelfConfig.planeHeight-shelfConfig.legHeight)/2)
     leg3.position.set(shelfConfig.positionX-(shelfConfig.planeWidth-shelfConfig.legWidth)/2, shelfConfig.legDepth/2 + shelfConfig.positionY, shelfConfig.positionZ-(shelfConfig.planeHeight-shelfConfig.legHeight)/2)
@@ -99,6 +104,7 @@ function createCargo(x,y,z,boxCargo) {
     })
     let obj = new THREE.Mesh( geometry, cargoMaterial );
     obj.position.set(x,y,z);
+    obj.needsUpdate = true
     obj.name = boxCargo.name;
     return obj
 }

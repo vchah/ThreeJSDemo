@@ -232,9 +232,12 @@ export default {
         },
         //添加gui
         initGui(){
+            this.gui = null
             this.gui = new GUI()
             let shelfFolder = this.gui.addFolder('Shelf')
-            shelfFolder.add(shelfConfig,'legDepth').min(1).max(200).step(1).name('货架高度')
+            shelfFolder.add(shelfConfig,'legDepth').min(1).max(200).step(1).name('货架高度').onChange(() => {
+
+            })
             shelfFolder.open()
             let cargoFolder = this.gui.addFolder('BoxCargo')
             cargoFolder.add(boxCargo, 'name')
@@ -256,9 +259,9 @@ export default {
             this.createWindow(40, 40, 10, 0, 200,  60, 495, "窗户4")
             initMaterial()
             addArea(0,0,500,500,this.scene,"ID1$库区1号","FF0000",20,"左对齐"); //添加库区
-            console.log(shelfConfig)
             createShelf(shelfConfig,this.scene)
-            this.cargo = addCargo(this.scene,shelfConfig,boxCargo)
+            this.cargo = addCargo(shelfConfig,boxCargo)
+            this.scene.add(this.cargo)
             this.composer = new THREE.ThreeJs_Composer(this.renderer,this.scene,this.camera)
         },
         // 刷新组件
